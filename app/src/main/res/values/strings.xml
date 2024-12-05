@@ -1,3 +1,22 @@
 <resources>
+    <!-- Base -->
     <string name="app_name">CurrencyInfoApp</string>
+    <string name="currencies">Currencies</string>
+    <string name="favorites">Favorites</string>
+    <string name="filters">Filters</string>
+    <string name="apply">Apply</string>
+
+    <!-- Messages -->
+    <string name="message_added_to_favorites">Added to favorites</string>
+    <string name="message_removed_from_favorites">Removed from favorites</string>
+    <string name="message_error_occurred">An error occurred</string>
+    <string name="message_no_data">No data available</string>
+    <string name="message_filter_applied">Filter applied</string>
+
+    <!-- Sorting -->
+    <string name="sort_by">SORT BY</string>
+    <string name="sort_code_a_z">Code A-Z</string>
+    <string name="sort_code_z_a">Code Z-A</string>
+    <string name="sort_quote_asc">Quote Asc.</string>
+    <string name="sort_quote_desc">Quote Desc.</string>
 </resources>
