@@ -1,4 +1,4 @@
-package com.alexstefanov.currencyinfoapp
+package com.alexstefanov.currencyinfoapp.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
