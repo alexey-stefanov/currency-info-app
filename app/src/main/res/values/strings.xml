@@ -5,6 +5,7 @@
     <string name="favorites">Favorites</string>
     <string name="filters">Filters</string>
     <string name="apply">Apply</string>
+    <string name="back">Back</string>
 
     <!-- Messages -->
     <string name="message_added_to_favorites">Added to favorites</string>
@@ -19,4 +20,8 @@
     <string name="sort_code_z_a">Code Z-A</string>
     <string name="sort_quote_asc">Quote Asc.</string>
     <string name="sort_quote_desc">Quote Desc.</string>
+
+    <!-- Content Description -->
+    <string name="content_description_add_to_favorites">Add to favorites</string>
+    <string name="content_description_remove_from_favorites">Remove from favorites</string>
 </resources>
