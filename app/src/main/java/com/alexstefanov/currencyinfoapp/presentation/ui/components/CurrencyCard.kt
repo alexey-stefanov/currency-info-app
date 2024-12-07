@@ -3,6 +3,7 @@ package com.alexstefanov.currencyinfoapp.presentation.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -23,12 +24,13 @@ import com.alexstefanov.currencyinfoapp.R
 fun CurrencyCard(
     currencyCode: String,
     exchangeRate: String,
-    isFavorite: Boolean,
-    onFavoriteClick: () -> Unit
+    isFavorite: Boolean = false,
+    onFavoriteClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(56.dp)
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
