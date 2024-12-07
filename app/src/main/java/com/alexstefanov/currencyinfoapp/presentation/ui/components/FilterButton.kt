@@ -1,5 +1,6 @@
 package com.alexstefanov.currencyinfoapp.presentation.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -27,11 +28,12 @@ fun FilterButton(onClick: () -> Unit) {
                 MaterialTheme.colorScheme.secondary,
                 RoundedCornerShape(8.dp)
             )
+            .background(MaterialTheme.colorScheme.background)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            painterResource(R.drawable.ic_filter), // Замени на нужную иконку
+            painterResource(R.drawable.ic_filter),
             contentDescription = stringResource(R.string.filters),
             tint = MaterialTheme.colorScheme.primary
         )
