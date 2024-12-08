@@ -2,7 +2,11 @@ package com.alexstefanov.currencyinfoapp.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alexstefanov.currencyinfoapp.data.repository.CurrencyRepository
+import com.alexstefanov.currencyinfoapp.data.repository.currency.CurrencyRepository
+import com.alexstefanov.currencyinfoapp.data.repository.favoritecurrency.FavoritePairRepository
+import com.alexstefanov.currencyinfoapp.domain.mapper.toCurrencyUi
+import com.alexstefanov.currencyinfoapp.domain.mapper.toDomain
+import com.alexstefanov.currencyinfoapp.presentation.model.CurrencyUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,39 +16,76 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CurrencyViewModel @Inject constructor(
-    private val currencyRepository: CurrencyRepository
+    private val currencyRepository: CurrencyRepository,
+    private val favoritePairRepository: FavoritePairRepository
 ) : ViewModel() {
 
-    private val _selectedCurrency = MutableStateFlow<String>("USD")
-    val selectedCurrency: StateFlow<String> = _selectedCurrency
+    private val _selectedCurrencyCode = MutableStateFlow<String>("USD")
+    val selectedCurrencyCode: StateFlow<String> = _selectedCurrencyCode
 
     private val _currencySymbols = MutableStateFlow<Map<String, String>>(emptyMap())
     val currencySymbols: StateFlow<Map<String, String>> = _currencySymbols
 
-    private val _currencies = MutableStateFlow<Map<String, Double>>(emptyMap())
-    val currencies: StateFlow<Map<String, Double>> = _currencies
+    private val _currencies = MutableStateFlow<List<CurrencyUiModel>>(emptyList())
+    val currencies: StateFlow<List<CurrencyUiModel>> = _currencies
 
     init {
-        getLatestCurrency()
-        getCurrencySymbols()
-    }
-
-    fun selectCurrency(currency: String) {
-        _selectedCurrency.value = currency
-        getLatestCurrency()
-    }
-
-    fun getCurrencySymbols() {
         viewModelScope.launch(Dispatchers.IO) {
-            val currencySymbols = currencyRepository.getCurrencySymbols()
-            _currencySymbols.value = currencySymbols
+            getLatestCurrencies()
+            getCurrencySymbols()
+            observeFavorites()
         }
     }
 
-    fun getLatestCurrency() {
+    private suspend fun observeFavorites() {
+        favoritePairRepository.getPairsForBaseCurrencyFlow(selectedCurrencyCode.value)
+            .collect { favoritePairs ->
+                val latestCurrencies = _currencies.value
+                _currencies.value = latestCurrencies.map { currency ->
+                    currency.copy(
+                        isFavorite = currency.codeLabel in favoritePairs
+                    )
+                }
+            }
+    }
+
+    fun selectCurrency(currency: String) {
+        _selectedCurrencyCode.value = currency
         viewModelScope.launch(Dispatchers.IO) {
-            val latestCurrencies = currencyRepository.getLatestCurrencies(selectedCurrency.value)
-            _currencies.value = latestCurrencies
+            getLatestCurrencies()
+        }
+    }
+
+    private suspend fun getCurrencySymbols() {
+        val currencySymbols = currencyRepository.getCurrencySymbols()
+        _currencySymbols.value = currencySymbols
+    }
+
+    private suspend fun getLatestCurrencies() {
+        val selectedCurrencyCode = selectedCurrencyCode.value
+        val latestCurrencies = currencyRepository.getLatestCurrencies(selectedCurrencyCode)
+        val targetCurrencyCodes = favoritePairRepository.getPairsForBaseCurrency(selectedCurrencyCode)
+        val mappedCurrencies = latestCurrencies.map { it.toCurrencyUi(targetCurrencyCodes) }
+        _currencies.value = mappedCurrencies
+    }
+
+    fun addPairToFavorites(currencyUiModel: CurrencyUiModel) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currencyModel = currencyUiModel.toDomain(selectedCurrencyCode.value)
+            favoritePairRepository.addPairToFavorites(currencyModel)
+            _currencies.value = _currencies.value.map {
+                if (it.codeLabel == currencyUiModel.codeLabel) it.copy(isFavorite = true) else it
+            }
+        }
+    }
+
+    fun removePairFromFavorites(currencyUiModel: CurrencyUiModel) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pairCode = "${selectedCurrencyCode.value}/${currencyUiModel.codeLabel}"
+            favoritePairRepository.removePairFromFavorites(pairCode)
+            _currencies.value = _currencies.value.map {
+                if (it.codeLabel == currencyUiModel.codeLabel) it.copy(isFavorite = false) else it
+            }
         }
     }
 }

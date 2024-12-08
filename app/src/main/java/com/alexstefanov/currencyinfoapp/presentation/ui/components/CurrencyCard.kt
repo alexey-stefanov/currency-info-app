@@ -19,13 +19,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.alexstefanov.currencyinfoapp.R
+import com.alexstefanov.currencyinfoapp.presentation.model.CurrencyUiModel
 
 @Composable
 fun CurrencyCard(
-    currencyCode: String,
-    exchangeRate: String,
-    isFavorite: Boolean = false,
-    onFavoriteClick: () -> Unit = {}
+    currencyUiModel: CurrencyUiModel,
+    onFavoriteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -43,7 +42,7 @@ fun CurrencyCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = currencyCode,
+                text = currencyUiModel.codeLabel,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -53,26 +52,25 @@ fun CurrencyCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = exchangeRate,
+                    text = currencyUiModel.rateValue,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
                 IconButton(onClick = onFavoriteClick) {
-                    Icon(
-                        painter = if (isFavorite)
-                            painterResource(R.drawable.ic_favorites_on)
-                        else
-                            painterResource(R.drawable.ic_favorites_off),
-                        contentDescription = if (isFavorite)
-                            stringResource(R.string.content_description_remove_from_favorites)
-                        else
-                            stringResource(R.string.content_description_remove_from_favorites),
-                        tint = if (isFavorite)
-                            MaterialTheme.colorScheme.tertiary
-                        else
-                            MaterialTheme.colorScheme.secondary
-                    )
+                    if (currencyUiModel.isFavorite) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_favorites_on),
+                            contentDescription = stringResource(R.string.content_description_remove_from_favorites),
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_favorites_off),
+                            contentDescription = stringResource(R.string.content_description_add_to_favorites),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
             }
         }

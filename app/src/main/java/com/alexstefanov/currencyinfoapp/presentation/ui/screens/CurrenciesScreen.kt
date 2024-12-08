@@ -1,5 +1,6 @@
 package com.alexstefanov.currencyinfoapp.presentation.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -59,7 +61,7 @@ fun CurrenciesScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                val selectedCurrency by viewModel.selectedCurrency.collectAsState()
+                val selectedCurrency by viewModel.selectedCurrencyCode.collectAsState()
                 val currencySymbols by viewModel.currencySymbols.collectAsState()
 
                 CurrencyDropdown(
@@ -76,9 +78,9 @@ fun CurrenciesScreen(
             }
 
             val currencies by viewModel.currencies.collectAsState()
+            val context = LocalContext.current
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 16.dp,
@@ -86,11 +88,24 @@ fun CurrenciesScreen(
                     bottom = 16.dp
                 )
             ) {
-                items(currencies.toList()) { (currency, rate) ->
+                items(currencies) { currencyUiModel ->
                     CurrencyCard(
-                        currencyCode = currency,
-                        exchangeRate = rate.toString()
-                    )
+                        currencyUiModel = currencyUiModel
+                    ) {
+                        if (currencyUiModel.isFavorite) {
+                            viewModel.removePairFromFavorites(currencyUiModel)
+                            Toast.makeText(
+                                context, context.getString(R.string.message_removed_from_favorites),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            viewModel.addPairToFavorites(currencyUiModel)
+                            Toast.makeText(
+                                context, context.getString(R.string.message_added_to_favorites),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 }
             }
         }
