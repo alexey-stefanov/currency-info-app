@@ -1,6 +1,5 @@
 package com.alexstefanov.currencyinfoapp.presentation.ui.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alexstefanov.currencyinfoapp.R
+import com.alexstefanov.currencyinfoapp.app.utils.showToastMessage
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.AppTopBar
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.CurrencyCard
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.CurrencyDropdown
@@ -37,6 +37,8 @@ fun CurrenciesScreen(
     viewModel: CurrencyViewModel = hiltViewModel(),
     onFilterClick: () -> Unit
 ) {
+    val currencies by viewModel.currencies.collectAsState()
+
     Scaffold(
         topBar = {
             AppTopBar(title = stringResource(R.string.currencies))
@@ -77,7 +79,6 @@ fun CurrenciesScreen(
                 FilterButton(onClick = onFilterClick)
             }
 
-            val currencies by viewModel.currencies.collectAsState()
             val context = LocalContext.current
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -88,22 +89,16 @@ fun CurrenciesScreen(
                     bottom = 16.dp
                 )
             ) {
-                items(currencies) { currencyUiModel ->
+                items(currencies) { currency ->
                     CurrencyCard(
-                        currencyUiModel = currencyUiModel
+                        currencyUiModel = currency
                     ) {
-                        if (currencyUiModel.isFavorite) {
-                            viewModel.removePairFromFavorites(currencyUiModel)
-                            Toast.makeText(
-                                context, context.getString(R.string.message_removed_from_favorites),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        if (currency.isFavorite) {
+                            viewModel.removePairFromFavorites(currency)
+                            showToastMessage(context, R.string.message_removed_from_favorites)
                         } else {
-                            viewModel.addPairToFavorites(currencyUiModel)
-                            Toast.makeText(
-                                context, context.getString(R.string.message_added_to_favorites),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            viewModel.addPairToFavorites(currency)
+                            showToastMessage(context, R.string.message_added_to_favorites)
                         }
                     }
                 }

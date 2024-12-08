@@ -6,12 +6,14 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.alexstefanov.currencyinfoapp.presentation.ui.screens.CurrenciesScreen
 import com.alexstefanov.currencyinfoapp.presentation.ui.screens.FavoritesScreen
 import com.alexstefanov.currencyinfoapp.presentation.ui.screens.FiltersScreen
+import com.alexstefanov.currencyinfoapp.presentation.viewmodel.CurrencyViewModel
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -31,7 +33,9 @@ fun AppNavGraph(navController: NavHostController) {
 
             }
         ) {
+            val viewModel: CurrencyViewModel = hiltViewModel(navController.getBackStackEntry("currencies"))
             CurrenciesScreen(
+                viewModel = viewModel,
                 onFilterClick = {
                     navController.navigate(Screen.Filters.route)
                 }
@@ -59,7 +63,9 @@ fun AppNavGraph(navController: NavHostController) {
 
             }
         ) {
+            val viewModel: CurrencyViewModel = hiltViewModel(navController.getBackStackEntry("currencies"))
             FiltersScreen(
+                viewModel = viewModel,
                 onBackClick = {
                     navController.popBackStack()
                 }
