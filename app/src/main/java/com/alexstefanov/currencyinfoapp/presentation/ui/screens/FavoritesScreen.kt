@@ -17,9 +17,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alexstefanov.currencyinfoapp.R
-import com.alexstefanov.currencyinfoapp.presentation.ui.components.AppTopBar
-import com.alexstefanov.currencyinfoapp.presentation.ui.components.CurrencyCard
-import com.alexstefanov.currencyinfoapp.presentation.ui.components.EmptyView
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.appcomponents.AppTopBar
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.view.CurrencyCard
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.stateview.EmptyView
 import com.alexstefanov.currencyinfoapp.presentation.viewmodel.FavoritePairViewModel
 
 @Composable

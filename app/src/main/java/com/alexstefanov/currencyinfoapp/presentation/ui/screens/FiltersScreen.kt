@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alexstefanov.currencyinfoapp.R
 import com.alexstefanov.currencyinfoapp.app.utils.showToastMessage
-import com.alexstefanov.currencyinfoapp.presentation.ui.components.AppTopBar
-import com.alexstefanov.currencyinfoapp.presentation.ui.components.FiltersRadioButtonGroup
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.appcomponents.AppTopBar
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.view.FiltersRadioButtonGroup
 import com.alexstefanov.currencyinfoapp.presentation.ui.theme.Gray
 import com.alexstefanov.currencyinfoapp.presentation.viewmodel.CurrencyViewModel
 

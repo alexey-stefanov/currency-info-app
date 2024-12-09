@@ -1,4 +1,4 @@
-package com.alexstefanov.currencyinfoapp.presentation.ui.components
+package com.alexstefanov.currencyinfoapp.presentation.ui.components.appcomponents
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.HorizontalDivider

@@ -1,4 +1,4 @@
-package com.alexstefanov.currencyinfoapp.presentation.ui.components
+package com.alexstefanov.currencyinfoapp.presentation.ui.components.appcomponents
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon

@@ -1,4 +1,4 @@
-package com.alexstefanov.currencyinfoapp.presentation.ui.components
+package com.alexstefanov.currencyinfoapp.presentation.ui.components.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

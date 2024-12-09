@@ -14,7 +14,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.alexstefanov.currencyinfoapp.presentation.navigation.AppNavGraph
 import com.alexstefanov.currencyinfoapp.presentation.navigation.Screen
-import com.alexstefanov.currencyinfoapp.presentation.ui.components.BottomNavigationBar
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.appcomponents.BottomNavigationBar
 import com.alexstefanov.currencyinfoapp.presentation.ui.theme.CurrencyInfoAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
