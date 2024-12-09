@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.alexstefanov.currencyinfoapp.R
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.AppTopBar
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.CurrencyCard
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.EmptyView
 import com.alexstefanov.currencyinfoapp.presentation.viewmodel.FavoritePairViewModel
 
 @Composable
@@ -29,33 +30,38 @@ fun FavoritesScreen(viewModel: FavoritePairViewModel = hiltViewModel()) {
         }
     ) { padding ->
         val favoritePairs by viewModel.favoritePairs.collectAsState(emptyList())
-        val context = LocalContext.current
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = padding.calculateLeftPadding(LayoutDirection.Ltr),
-                    top = padding.calculateTopPadding(),
-                    end = padding.calculateRightPadding(LayoutDirection.Ltr)
-                ),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                top = 16.dp,
-                end = 16.dp,
-                bottom = 16.dp
-            )
-        ) {
-            items(favoritePairs) { currencyUiModel ->
-                CurrencyCard(
-                    currencyUiModel = currencyUiModel
-                ) {
-                    viewModel.removePairFromFavorites(currencyUiModel.codeLabel)
-                    Toast.makeText(
-                        context, context.getString(R.string.message_removed_from_favorites),
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+        if (favoritePairs.isNotEmpty()) {
+            val context = LocalContext.current
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        start = padding.calculateLeftPadding(LayoutDirection.Ltr),
+                        top = padding.calculateTopPadding(),
+                        end = padding.calculateRightPadding(LayoutDirection.Ltr)
+                    ),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
+                )
+            ) {
+                items(favoritePairs) { currencyUiModel ->
+                    CurrencyCard(
+                        currencyUiModel = currencyUiModel
+                    ) {
+                        viewModel.removePairFromFavorites(currencyUiModel.codeLabel)
+                        Toast.makeText(
+                            context, context.getString(R.string.message_removed_from_favorites),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
+        } else {
+            EmptyView()
         }
     }
 }

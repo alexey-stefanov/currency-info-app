@@ -5,8 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface FavoritePairRepository {
     fun getAllFavoritePairs(): Flow<List<CurrencyModel>>
-    suspend fun getPairsForBaseCurrency(baseCurrencyCode: String): List<String>
-    fun getPairsForBaseCurrencyFlow(baseCurrencyCode: String): Flow<List<String>>
+    fun getPairsForBaseCurrency(baseCurrencyCode: String): List<String>
     suspend fun addPairToFavorites(currencyModel: CurrencyModel)
     suspend fun removePairFromFavorites(pair: String)
 }

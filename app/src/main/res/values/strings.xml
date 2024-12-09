@@ -21,6 +21,10 @@
     <string name="sort_quote_asc">Quote Asc.</string>
     <string name="sort_quote_desc">Quote Desc.</string>
 
+    <!-- Additional -->
+    <string name="no_data">No data available</string>
+    <string name="error">Error: %s</string>
+
     <!-- Content Description -->
     <string name="content_description_add_to_favorites">Add to favorites</string>
     <string name="content_description_remove_from_favorites">Remove from favorites</string>

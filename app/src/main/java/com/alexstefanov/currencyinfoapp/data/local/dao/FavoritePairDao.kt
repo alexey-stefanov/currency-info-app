@@ -16,9 +16,6 @@ interface FavoritePairDao {
     @Query("SELECT targetCurrencyCode FROM favorite_pairs WHERE baseCurrencyCode = :baseCurrencyCode")
     fun getPairsForBaseCurrency(baseCurrencyCode: String): List<String>
 
-    @Query("SELECT targetCurrencyCode FROM favorite_pairs WHERE baseCurrencyCode = :baseCurrencyCode")
-    fun getPairsForBaseCurrencyFlow(baseCurrencyCode: String): Flow<List<String>>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(favoritePairEntity: FavoritePairEntity)
 

@@ -25,11 +25,15 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alexstefanov.currencyinfoapp.R
+import com.alexstefanov.currencyinfoapp.app.utils.ScreenState
 import com.alexstefanov.currencyinfoapp.app.utils.showToastMessage
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.AppTopBar
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.CurrencyCard
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.CurrencyDropdown
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.EmptyView
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.ErrorView
 import com.alexstefanov.currencyinfoapp.presentation.ui.components.FilterButton
+import com.alexstefanov.currencyinfoapp.presentation.ui.components.LoadingView
 import com.alexstefanov.currencyinfoapp.presentation.viewmodel.CurrencyViewModel
 
 @Composable
@@ -37,7 +41,7 @@ fun CurrenciesScreen(
     viewModel: CurrencyViewModel = hiltViewModel(),
     onFilterClick: () -> Unit
 ) {
-    val currencies by viewModel.currencies.collectAsState()
+    val screenState by viewModel.screenState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -53,52 +57,71 @@ fun CurrenciesScreen(
                     end = padding.calculateRightPadding(LayoutDirection.Ltr)
                 )
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                val selectedCurrency by viewModel.selectedCurrencyCode.collectAsState()
-                val currencySymbols by viewModel.currencySymbols.collectAsState()
-
-                CurrencyDropdown(
-                    modifier = Modifier.weight(1f),
-                    selectedCurrency = selectedCurrency,
-                    currencyList = currencySymbols.map { it.key }
-                ) { newSelectedCurrency ->
-                    viewModel.selectCurrency(newSelectedCurrency)
+            when (screenState) {
+                is ScreenState.InitialState -> {}
+                is ScreenState.LoadingState -> {
+                    LoadingView()
                 }
+                is ScreenState.EmptyState -> {
+                    EmptyView()
+                }
+                is ScreenState.ErrorState -> {
+                    val message = (screenState as ScreenState.ErrorState).message
+                    ErrorView(message = message) {
+                        viewModel.retry()
+                    }
+                }
+                is ScreenState.DataState -> {
+                    val currencies = (screenState as ScreenState.DataState).data
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                FilterButton(onClick = onFilterClick)
-            }
-
-            val context = LocalContext.current
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                )
-            ) {
-                items(currencies) { currency ->
-                    CurrencyCard(
-                        currencyUiModel = currency
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (currency.isFavorite) {
-                            viewModel.removePairFromFavorites(currency)
-                            showToastMessage(context, R.string.message_removed_from_favorites)
-                        } else {
-                            viewModel.addPairToFavorites(currency)
-                            showToastMessage(context, R.string.message_added_to_favorites)
+
+                        val selectedCurrency by viewModel.selectedCurrencyCode.collectAsState()
+                        val currencySymbols by viewModel.currencySymbols.collectAsState()
+
+                        CurrencyDropdown(
+                            modifier = Modifier.weight(1f),
+                            selectedCurrency = selectedCurrency,
+                            currencyList = currencySymbols.map { it.key }
+                        ) { newSelectedCurrency ->
+                            viewModel.selectCurrency(newSelectedCurrency)
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        FilterButton(onClick = onFilterClick)
+                    }
+
+                    val context = LocalContext.current
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            top = 16.dp,
+                            end = 16.dp,
+                            bottom = 16.dp
+                        )
+                    ) {
+                        items(currencies) { currency ->
+                            CurrencyCard(
+                                currencyUiModel = currency
+                            ) {
+                                if (currency.isFavorite) {
+                                    viewModel.removePairFromFavorites(currency)
+                                    showToastMessage(context, R.string.message_removed_from_favorites)
+                                } else {
+                                    viewModel.addPairToFavorites(currency)
+                                    showToastMessage(context, R.string.message_added_to_favorites)
+                                }
+                            }
                         }
                     }
                 }

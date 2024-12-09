@@ -2,17 +2,21 @@ package com.alexstefanov.currencyinfoapp.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alexstefanov.currencyinfoapp.app.utils.Result
+import com.alexstefanov.currencyinfoapp.app.utils.ScreenState
 import com.alexstefanov.currencyinfoapp.data.repository.currency.CurrencyRepository
 import com.alexstefanov.currencyinfoapp.data.repository.favoritecurrency.FavoritePairRepository
 import com.alexstefanov.currencyinfoapp.domain.mapper.toCurrencyUi
 import com.alexstefanov.currencyinfoapp.domain.mapper.toDomain
-import com.alexstefanov.currencyinfoapp.domain.model.CurrencyModel
 import com.alexstefanov.currencyinfoapp.domain.model.SortOrder
 import com.alexstefanov.currencyinfoapp.presentation.model.CurrencyUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,71 +26,125 @@ class CurrencyViewModel @Inject constructor(
     private val favoritePairRepository: FavoritePairRepository
 ) : ViewModel() {
 
+    private val _screenState =
+        MutableStateFlow<ScreenState<List<CurrencyUiModel>>>(ScreenState.InitialState)
+    val screenState: StateFlow<ScreenState<List<CurrencyUiModel>>> = _screenState
+
     private val _selectedCurrencyCode = MutableStateFlow<String>("USD")
     val selectedCurrencyCode: StateFlow<String> = _selectedCurrencyCode
 
     private val _currencySymbols = MutableStateFlow<Map<String, String>>(emptyMap())
     val currencySymbols: StateFlow<Map<String, String>> = _currencySymbols
 
-    private val _currencies = MutableStateFlow<List<CurrencyUiModel>>(emptyList())
-    val currencies: StateFlow<List<CurrencyUiModel>> = _currencies
-
     private val _currentFilter = MutableStateFlow<SortOrder>(SortOrder.CodeAZ)
     val currentFilter: StateFlow<SortOrder> = _currentFilter
 
+    // refresh every 60 seconds
+    private val periodicRefreshFlow = flow {
+        while (true) {
+            emit(Unit)
+            kotlinx.coroutines.delay(60_000)
+        }
+    }
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            getLatestCurrencies()
             getCurrencySymbols()
+            refreshData()
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
             observeFavorites()
         }
     }
 
+    private suspend fun refreshData() {
+        combine(
+            selectedCurrencyCode,
+            periodicRefreshFlow
+        ) { currencyCode, _ ->
+            fetchLatestCurrenciesWithFavorites(currencyCode)
+        }.collect()
+    }
+
     private suspend fun observeFavorites() {
-        favoritePairRepository.getPairsForBaseCurrencyFlow(selectedCurrencyCode.value)
-            .collect { favoritePairs ->
-                val latestCurrencies = _currencies.value
-                _currencies.value = latestCurrencies.map { currency ->
-                    currency.copy(isFavorite = currency.codeLabel in favoritePairs)
+        favoritePairRepository.getAllFavoritePairs().collect { favoritePairs ->
+            val favoritePairCodes = favoritePairs.map { "${it.baseCurrencyCode}/${it.targetCurrencyCode}" }
+
+            val currentList = (screenState.value as? ScreenState.DataState)?.data
+
+            currentList?.let {
+                val updatedList = currentList.map { currency ->
+                    val isFavorite = "${selectedCurrencyCode.value}/${currency.codeLabel}" in favoritePairCodes
+                    if (currency.isFavorite != isFavorite) {
+                        currency.copy(isFavorite = isFavorite)
+                    } else {
+                        currency
+                    }
                 }
+
+                _screenState.value = ScreenState.DataState(updatedList)
             }
+        }
     }
 
     fun selectCurrency(currency: String) {
         _selectedCurrencyCode.value = currency
-        viewModelScope.launch(Dispatchers.IO) {
-            getLatestCurrencies()
-            applyFilter(currentFilter.value)
-        }
     }
 
     private suspend fun getCurrencySymbols() {
-        //val currencySymbols = currencyRepository.getCurrencySymbols()
-        val currencySymbols = mapOf("USD" to "", "BYN" to "", "RUB" to "", "EUR" to "")
-        _currencySymbols.value = currencySymbols
+        val currencySymbolsResult = currencyRepository.getCurrencySymbols()
+
+        when (currencySymbolsResult) {
+            is Result.Success -> {
+                _currencySymbols.value = currencySymbolsResult.data
+            }
+
+            is Result.Failure -> {
+                _screenState.value =
+                    ScreenState.ErrorState(currencySymbolsResult.error.message ?: "")
+            }
+        }
     }
 
-    private suspend fun getLatestCurrencies() {
-        val selectedCurrencyCode = selectedCurrencyCode.value
-        //val latestCurrencies = currencyRepository.getLatestCurrencies(selectedCurrencyCode)
-        val latestCurrencies = listOf(
-            CurrencyModel("USD", "BYN", 2.0),
-            CurrencyModel("USD", "PLN", -1.0),
-            CurrencyModel("USD", "RUB", 0.2),
-            CurrencyModel("USD", "EUR", 3.5),
-            CurrencyModel("USD", "JYP", 1.0)
-        )
-        val targetCurrencyCodes = favoritePairRepository.getPairsForBaseCurrency(selectedCurrencyCode)
-        val mappedCurrencies = latestCurrencies.map { it.toCurrencyUi(targetCurrencyCodes) }
-        _currencies.value = sortCurrencies(mappedCurrencies, currentFilter.value)
+    private suspend fun fetchLatestCurrenciesWithFavorites(selectedCurrency: String) {
+        _screenState.value = ScreenState.LoadingState
+        val latestCurrenciesResult = currencyRepository.getLatestCurrencies(selectedCurrency)
+        val favoritePairs = favoritePairRepository.getPairsForBaseCurrency(selectedCurrency)
+
+        when (latestCurrenciesResult) {
+            is Result.Success -> {
+                val updatedCurrencies = latestCurrenciesResult.data.map { currency ->
+                    currency.toCurrencyUi().copy(
+                        isFavorite = currency.targetCurrencyCode in favoritePairs
+                    )
+                }
+
+                val sortedCurrencies = sortCurrencies(updatedCurrencies, _currentFilter.value)
+                if (sortedCurrencies.isNotEmpty()) {
+                    _screenState.value = ScreenState.DataState(sortedCurrencies)
+                } else {
+                    _screenState.value = ScreenState.EmptyState
+                }
+            }
+
+            is Result.Failure -> {
+                _screenState.value =
+                    ScreenState.ErrorState(latestCurrenciesResult.error.message ?: "")
+            }
+        }
     }
 
     fun addPairToFavorites(currencyUiModel: CurrencyUiModel) {
         viewModelScope.launch(Dispatchers.IO) {
             val currencyModel = currencyUiModel.toDomain(selectedCurrencyCode.value)
             favoritePairRepository.addPairToFavorites(currencyModel)
-            _currencies.value = currencies.value.map {
-                if (it.codeLabel == currencyUiModel.codeLabel) it.copy(isFavorite = true) else it
+
+            if (screenState.value is ScreenState.DataState) {
+                val updatedList = (screenState.value as ScreenState.DataState).data.map {
+                    if (it.codeLabel == currencyUiModel.codeLabel) it.copy(isFavorite = true) else it
+                }
+                _screenState.value = ScreenState.DataState(updatedList)
             }
         }
     }
@@ -95,8 +153,12 @@ class CurrencyViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val pairCode = "${selectedCurrencyCode.value}/${currencyUiModel.codeLabel}"
             favoritePairRepository.removePairFromFavorites(pairCode)
-            _currencies.value = currencies.value.map {
-                if (it.codeLabel == currencyUiModel.codeLabel) it.copy(isFavorite = false) else it
+
+            if (screenState.value is ScreenState.DataState) {
+                val updatedList = (screenState.value as ScreenState.DataState).data.map {
+                    if (it.codeLabel == currencyUiModel.codeLabel) it.copy(isFavorite = false) else it
+                }
+                _screenState.value = ScreenState.DataState(updatedList)
             }
         }
     }
@@ -104,16 +166,29 @@ class CurrencyViewModel @Inject constructor(
     fun applyFilter(sortOrder: SortOrder) {
         if (currentFilter.value != sortOrder) {
             _currentFilter.value = sortOrder
-            _currencies.value = sortCurrencies(currencies.value, sortOrder)
+            val currencies = (screenState.value as? ScreenState.DataState)?.data ?: emptyList()
+            val sortedCurrencies = sortCurrencies(currencies, _currentFilter.value)
+            if (sortedCurrencies.isNotEmpty()) {
+                _screenState.value = ScreenState.DataState(sortedCurrencies)
+            }
         }
     }
 
-    private fun sortCurrencies(currencies: List<CurrencyUiModel>, sortOrder: SortOrder): List<CurrencyUiModel> {
+    private fun sortCurrencies(
+        currencies: List<CurrencyUiModel>,
+        sortOrder: SortOrder
+    ): List<CurrencyUiModel> {
         return when (sortOrder) {
             SortOrder.CodeAZ -> currencies.sortedBy { it.codeLabel }
             SortOrder.CodeZA -> currencies.sortedByDescending { it.codeLabel }
             SortOrder.QuoteAsc -> currencies.sortedBy { it.rateValue.toDouble() }
             SortOrder.QuoteDesc -> currencies.sortedByDescending { it.rateValue.toDouble() }
+        }
+    }
+
+    fun retry() {
+        viewModelScope.launch(Dispatchers.IO) {
+            fetchLatestCurrenciesWithFavorites(selectedCurrencyCode.value)
         }
     }
 }

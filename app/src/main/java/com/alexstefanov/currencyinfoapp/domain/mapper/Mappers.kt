@@ -32,11 +32,11 @@ fun CurrencyModel.toEntity(): FavoritePairEntity {
     )
 }
 
-fun CurrencyModel.toCurrencyUi(targetCurrencyCodes: List<String>): CurrencyUiModel {
+fun CurrencyModel.toCurrencyUi(): CurrencyUiModel {
     return CurrencyUiModel(
         codeLabel = targetCurrencyCode,
         rateValue = rate.toString(),
-        isFavorite = targetCurrencyCode in targetCurrencyCodes
+        isFavorite = false
     )
 }
 

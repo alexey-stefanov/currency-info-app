@@ -17,12 +17,8 @@ class FavoritePairRepositoryImpl @Inject constructor(
         return entitiesFlow.map { it.map { entity -> entity.toDomain() } }
     }
 
-    override suspend fun getPairsForBaseCurrency(baseCurrencyCode: String): List<String> {
+    override fun getPairsForBaseCurrency(baseCurrencyCode: String): List<String> {
         return dao.getPairsForBaseCurrency(baseCurrencyCode)
-    }
-
-    override fun getPairsForBaseCurrencyFlow(baseCurrencyCode: String): Flow<List<String>> {
-        return dao.getPairsForBaseCurrencyFlow(baseCurrencyCode)
     }
 
     override suspend fun addPairToFavorites(currencyModel: CurrencyModel) {
