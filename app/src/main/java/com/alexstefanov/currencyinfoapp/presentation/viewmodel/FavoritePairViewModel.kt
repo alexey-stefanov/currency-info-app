@@ -2,8 +2,8 @@ package com.alexstefanov.currencyinfoapp.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alexstefanov.currencyinfoapp.data.repository.favoritecurrency.FavoritePairRepository
-import com.alexstefanov.currencyinfoapp.domain.mapper.toFavoritePairUi
+import com.alexstefanov.currencyinfoapp.domain.repository.FavoritePairRepository
+import com.alexstefanov.currencyinfoapp.presentation.model.toFavoritePairUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map

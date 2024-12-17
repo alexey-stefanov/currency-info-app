@@ -1,4 +1,4 @@
-package com.alexstefanov.currencyinfoapp.data.repository.currency
+package com.alexstefanov.currencyinfoapp.domain.repository
 
 import com.alexstefanov.currencyinfoapp.app.utils.Result
 import com.alexstefanov.currencyinfoapp.domain.model.CurrencyModel

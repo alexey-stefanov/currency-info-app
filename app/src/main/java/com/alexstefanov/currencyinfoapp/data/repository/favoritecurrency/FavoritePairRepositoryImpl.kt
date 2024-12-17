@@ -1,9 +1,10 @@
 package com.alexstefanov.currencyinfoapp.data.repository.favoritecurrency
 
 import com.alexstefanov.currencyinfoapp.data.local.dao.FavoritePairDao
-import com.alexstefanov.currencyinfoapp.domain.mapper.toDomain
-import com.alexstefanov.currencyinfoapp.domain.mapper.toEntity
+import com.alexstefanov.currencyinfoapp.data.local.entity.toDomain
+import com.alexstefanov.currencyinfoapp.data.local.entity.toEntity
 import com.alexstefanov.currencyinfoapp.domain.model.CurrencyModel
+import com.alexstefanov.currencyinfoapp.domain.repository.FavoritePairRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

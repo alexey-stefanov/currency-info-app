@@ -3,8 +3,9 @@ package com.alexstefanov.currencyinfoapp.data.repository.currency
 import com.alexstefanov.currencyinfoapp.app.utils.Result
 import com.alexstefanov.currencyinfoapp.app.utils.safeApiCall
 import com.alexstefanov.currencyinfoapp.data.remote.CurrencyApiService
-import com.alexstefanov.currencyinfoapp.domain.mapper.toDomain
+import com.alexstefanov.currencyinfoapp.data.remote.response.toDomain
 import com.alexstefanov.currencyinfoapp.domain.model.CurrencyModel
+import com.alexstefanov.currencyinfoapp.domain.repository.CurrencyRepository
 import javax.inject.Inject
 
 class CurrencyRepositoryImpl @Inject constructor(

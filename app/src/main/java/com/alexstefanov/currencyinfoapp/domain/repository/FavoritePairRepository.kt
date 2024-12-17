@@ -1,4 +1,4 @@
-package com.alexstefanov.currencyinfoapp.data.repository.favoritecurrency
+package com.alexstefanov.currencyinfoapp.domain.repository
 
 import com.alexstefanov.currencyinfoapp.domain.model.CurrencyModel
 import kotlinx.coroutines.flow.Flow

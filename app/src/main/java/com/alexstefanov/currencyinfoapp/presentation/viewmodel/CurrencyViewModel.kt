@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alexstefanov.currencyinfoapp.app.utils.Result
 import com.alexstefanov.currencyinfoapp.app.utils.ScreenState
-import com.alexstefanov.currencyinfoapp.data.repository.currency.CurrencyRepository
-import com.alexstefanov.currencyinfoapp.data.repository.favoritecurrency.FavoritePairRepository
-import com.alexstefanov.currencyinfoapp.domain.mapper.toCurrencyUi
-import com.alexstefanov.currencyinfoapp.domain.mapper.toDomain
 import com.alexstefanov.currencyinfoapp.domain.model.SortOrder
+import com.alexstefanov.currencyinfoapp.domain.repository.CurrencyRepository
+import com.alexstefanov.currencyinfoapp.domain.repository.FavoritePairRepository
 import com.alexstefanov.currencyinfoapp.presentation.model.CurrencyUiModel
+import com.alexstefanov.currencyinfoapp.presentation.model.toCurrencyUi
+import com.alexstefanov.currencyinfoapp.presentation.model.toDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,13 +69,15 @@ class CurrencyViewModel @Inject constructor(
 
     private suspend fun observeFavorites() {
         favoritePairRepository.getAllFavoritePairs().collect { favoritePairs ->
-            val favoritePairCodes = favoritePairs.map { "${it.baseCurrencyCode}/${it.targetCurrencyCode}" }
+            val favoritePairCodes =
+                favoritePairs.map { "${it.baseCurrencyCode}/${it.targetCurrencyCode}" }
 
             val currentList = (screenState.value as? ScreenState.DataState)?.data
 
             currentList?.let {
                 val updatedList = currentList.map { currency ->
-                    val isFavorite = "${selectedCurrencyCode.value}/${currency.codeLabel}" in favoritePairCodes
+                    val isFavorite =
+                        "${selectedCurrencyCode.value}/${currency.codeLabel}" in favoritePairCodes
                     if (currency.isFavorite != isFavorite) {
                         currency.copy(isFavorite = isFavorite)
                     } else {
